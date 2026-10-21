@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CampusNet: Adaptive Campus Network Performance Optimization Using Congestion Detection and Quality of Service (QoS). National competition project dashboard.">
+    <title>CampusNet - Adaptive Campus Network Performance Optimization</title>
+    
+    <!-- Instant Theme Application Script to Prevent FOUC -->
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('campusnet_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Local NOC Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand-wrapper">
+                <div class="brand-icon">
+                    <img src="{{ url_for('static', filename='images/network_globe_node.svg') }}" alt="CampusNet Logo" style="width: 28px; height: 28px;">
+                </div>
+                <div class="brand-text">
+                    <h1>CampusNet Operations Center</h1>
+                    <p>Adaptive Performance Optimization • Congestion Detection • QoS Scheduling</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <span id="data-source-badge" class="badge badge-simulated">SIMULATED</span>
+                <span id="health-pill" class="badge badge-normal">UP • SQLite Connected</span>
+                <span id="last-updated-text" style="font-size: 0.75rem; color: var(--text-muted);">Synced: --:--:--</span>
+                
+                <button id="btn-toggle-3d-bg" class="btn btn-outline" title="Switch 3D Background Animation Mode">
+                    <span>🌌</span> 3D FX: <span id="bg-mode-label" style="color: var(--color-cyan); font-weight: 600;">Fusion</span>
+                </button>
+                <button id="btn-refresh" class="btn btn-outline" title="Refresh Telemetry">
+                    <span>↻</span> Refresh
+                </button>
+                <button id="btn-open-import-modal" class="btn btn-outline" title="Import Historical CSV">
+                    <span>↑</span> Import CSV
+                </button>
+                <button id="btn-export-csv" class="btn btn-outline" title="Export State to CSV">
+                    <span>↓</span> Export CSV
+                </button>
+                <button id="btn-reset-demo" class="btn btn-danger" title="Restore Baseline State">
+                    <span>↺</span> Reset Demo
+                </button>
+                <div id="user-session-widget" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button id="btn-open-login" class="btn btn-primary" title="Access Authority &amp; Admin Panel">
+                        <span>🔒</span> Sign In
+                    </button>
+                </div>
+
+                <!-- Theme Toggle Button (Top Right Corner) -->
+                <button id="theme-toggle-btn" class="theme-toggle-btn" type="button" title="Switch between Dark and Light mode" aria-label="Toggle Light and Dark Theme">
+                    <div class="theme-switch-track" aria-hidden="true">
+                        <span class="theme-switch-icon sun-icon">☀️</span>
+                        <span class="theme-switch-icon moon-icon">🌙</span>
+                        <span class="theme-switch-thumb"></span>
+                    </div>
+                    <span id="theme-toggle-label" class="theme-toggle-label">Dark</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" aria-label="Dashboard views">
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="overview" id="tab-btn-overview">
+                <span>📊</span> Operations Dashboard
+            </button>
+            <button class="tab-btn" data-tab="simulator" id="tab-btn-simulator">
+                <span>⚙️</span> QoS Policy Simulator
+            </button>
+            <button class="tab-btn" data-tab="experiments" id="tab-btn-experiments">
+                <span>🧪</span> Controlled Experiments
+            </button>
+            <button class="tab-btn" data-tab="lab" id="tab-btn-lab">
+                <span>🔌</span> Virtual Lab &amp; Linux TC
+            </button>
+            <button class="tab-btn" data-tab="docs" id="tab-btn-docs">
+                <span>📖</span> Architecture &amp; Viva Reference
+            </button>
+            <button class="tab-btn" data-tab="admin-panel" id="tab-btn-admin-panel">
+                <span>🛡️</span> Authority &amp; Administration
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+        <!-- ============================================================== -->
+        <!-- TAB 1: OPERATIONS DASHBOARD                                    -->
+        <!-- ============================================================== -->
+        <section id="pane-overview" class="tab-pane active" aria-labelledby="tab-btn-overview">
+            
+            <!-- KPI Summary Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card" id="kpi-card-capacity">
+                    <div class="kpi-label">Modeled Uplink Capacity</div>
+                    <div class="kpi-value" id="kpi-capacity">800.0 <span class="kpi-unit">Mbps</span></div>
+                    <div class="kpi-meta">Shared gateway link limit</div>
+                </div>
+
+                <div class="kpi-card" id="kpi-card-demand">
+                    <div class="kpi-label">Total Requested Demand</div>
+                    <div class="kpi-value" id="kpi-demand">915.0 <span class="kpi-unit">Mbps</span></div>
+                    <div class="kpi-meta" style="color: var(--color-amber);">Contention Ratio: 114.4%</div>
+                </div>
+
+                <div class="kpi-card" id="kpi-card-allocated">
+                    <div class="kpi-label">Total Bandwidth Allocated</div>
+                    <div class="kpi-value" id="kpi-allocated">800.0 <span class="kpi-unit">Mbps</span></div>
+                    <div class="kpi-meta">Bounded by shared capacity</div>
+                </div>
+
+                <div class="kpi-card" id="kpi-card-utilization">
+                    <div class="kpi-label">Aggregate Utilization</div>
+                    <div class="kpi-value" id="kpi-utilization">100.0 <span class="kpi-unit">%</span></div>
+                    <div class="kpi-meta">Target: 70% Warn / 85% Crit</div>
+                </div>
+
+                <div class="kpi-card kpi-warning" id="kpi-card-alerts">
+                    <div class="kpi-label">Active Bottleneck Alerts</div>
+                    <div class="kpi-value" id="kpi-alerts">3 <span class="kpi-unit">(1 Crit)</span></div>
+                    <div class="kpi-meta" id="alerts-status-meta">Requires QoS Reprioritization</div>
+                </div>
+
+                <div class="kpi-card kpi-success" id="kpi-card-satisfaction">
+                    <div class="kpi-label">Demand Satisfaction</div>
+                    <div class="kpi-value" id="kpi-satisfaction">87.4 <span class="kpi-unit">%</span></div>
+                    <div class="kpi-meta">Weighted by academic priority</div>
+                </div>
+            </div>
+
+            <!-- Campus Segments Grid -->
+            <div style="margin-top: 1.5rem;">
+                <div class="section-header">
+                    <div class="section-title">
+                        <span>🏫</span> Campus Network Segments
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                        Demonstration illustrative data modeled for 5 distinct campus divisions
+                    </div>
+                </div>
+
+                <div id="segments-grid" class="segments-grid">
+                    <!-- Dynamically populated via dashboard.js -->
+                </div>
+            </div>
+
+            <!-- Telemetry & Comparison Charts -->
+            <div style="margin-top: 1.5rem;">
+                <div class="section-header">
+                    <div class="section-title">
+                        <span>📈</span> Live Network Telemetry &amp; Resource Allocation
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h4>Bandwidth Allocation vs Requested Demand (Mbps)</h4>
+                            <span class="badge badge-outline" style="font-size: 0.7rem;">QoS WFQ Distribution</span>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="chart-allocations"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h4>Link Utilization vs Congestion Thresholds (%)</h4>
+                            <span class="badge badge-outline" style="font-size: 0.7rem;">70% Warn | 85% Crit</span>
+                        </div>
+                        <div class="chart-canvas-wrap">
+                            <canvas id="chart-utilization"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Latency and Packet Loss Chart -->
+                <div class="chart-card" style="margin-top: 1.25rem;">
+                    <div class="chart-card-header">
+                        <h4>Telemetry Timeseries: Round-Trip Latency (ms) &amp; Packet Loss (%)</h4>
+                        <span class="badge badge-simulated" style="font-size: 0.7rem;">Aggregate Samples</span>
+                    </div>
+                    <div class="chart-canvas-wrap" style="min-height: 220px;">
+                        <canvas id="chart-telemetry"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Congestion Alerts Panel -->
+            <div style="margin-top: 1.5rem;">
+                <div class="section-header">
+                    <div class="section-title">
+                        <span>⚠️</span> Active Congestion &amp; Quality of Service Alerts
+                        <span id="alerts-badge-count" class="badge badge-warning" style="margin-left: 0.5rem;">3 Active</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                        Heuristic threshold detections with explainable rules and recommended remedies
+                    </div>
+                </div>
+
+                <div id="alerts-list" class="alerts-list">
+                    <!-- Populated via dashboard.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: QoS POLICY SIMULATOR                                    -->
+        <!-- ============================================================== -->
+        <section id="pane-simulator" class="tab-pane" aria-labelledby="tab-btn-simulator">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">
+                        <span>⚙️</span> Interactive Bandwidth Optimization &amp; Policy Lab
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                        Tune priority weights, adjust demand surges, and observe how the <strong>Weighted Fair Queuing with Progressive Filling (WFQ-PF)</strong> algorithm redistributes capacity without starving best-effort traffic.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="btn-preview-policy" class="btn btn-outline">
+                        <span>🔍</span> Calculate Live Preview
+                    </button>
+                    <button id="btn-apply-policy" class="btn btn-primary">
+                        <span>✓</span> Apply Policy to Campus Network
+                    </button>
+                </div>
+            </div>
+
+            <div class="simulator-layout">
+                <!-- Left: Controls -->
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="control-panel-card">
+                        <div class="form-group">
+                            <label for="sim-capacity-input">
+                                <span>Shared Campus Gateway Link Capacity:</span>
+                                <span class="badge badge-outline">Total Modeled Uplink</span>
+                            </label>
+                            <input type="number" id="sim-capacity-input" class="form-control" value="800" min="100" max="5000" step="50">
+                            <small style="color: var(--text-muted); font-size: 0.75rem;">
+                                Invariant: Total distributed allocations across all segments will never exceed this capacity limit.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div id="sim-segments-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <!-- Segment sliders generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Right: Explanations & Algorithmic Reasoning -->
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="control-panel-card">
+                        <h4 style="font-size: 1rem; color: #fff;">Algorithm &amp; Policy Parameters</h4>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                            <p><strong>Scheduling Engine:</strong> Weighted Fair Queuing with Progressive Filling (WFQ-PF)</p>
+                            <p><strong>Guaranteed Invariants:</strong></p>
+                            <ul style="padding-left: 1.25rem; margin-top: 0.25rem; font-size: 0.8rem; color: var(--text-muted);">
+                                <li><code>Allocation[i] ≥ 0</code> (Non-negativity)</li>
+                                <li><code>Allocation[i] ≤ Demand[i]</code> (Demand Bound)</li>
+                                <li><code>Σ Allocation[i] ≤ Total_Capacity</code> (Capacity Invariant)</li>
+                                <li>Work-conserving: Unused headroom is iteratively reallocated to high-priority unmet flows.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="sim-explanation-box" class="explanation-box" style="display: none;">
+                        <h4>
+                            <span>💡</span> Algorithmic Explanation &amp; Segment Breakdown
+                        </h4>
+                        <div id="sim-summary-text" style="font-size: 0.85rem; color: #E0E7FF; font-weight: 500;"></div>
+                        <ul id="sim-explanation-list" class="explanation-list">
+                            <!-- Populated after preview -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: CONTROLLED EXPERIMENTS                                 -->
+        <!-- ============================================================== -->
+        <section id="pane-experiments" class="tab-pane" aria-labelledby="tab-btn-experiments">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">
+                        <span>🧪</span> Controlled Before-and-After Experiments
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                        Evaluate performance improvements using repeatable, deterministic scenarios comparing unweighted FIFO contention against adaptive QoS optimization.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Scenario Selection Panel -->
+            <div class="control-panel-card" style="margin-bottom: 1.5rem;">
+                <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 280px;">
+                        <label for="scenario-select">Select Standard Benchmark Scenario:</label>
+                        <select id="scenario-select" class="form-control">
+                            <!-- Scenarios populated dynamically -->
+                        </select>
+                    </div>
+                    <button id="btn-run-experiment" class="btn btn-primary" style="height: 38px;">
+                        <span>▶</span> Run Controlled Experiment
+                    </button>
+                </div>
+            </div>
+
+            <!-- Experiment Results Area (Hidden until run) -->
+            <div id="exp-comparison-wrap" style="display: none;">
+                <!-- Comparison KPI Callouts -->
+                <div class="kpi-grid" style="margin-bottom: 1.25rem;">
+                    <div class="kpi-card kpi-success">
+                        <div class="kpi-label">High-Priority Satisfaction Gain</div>
+                        <div class="kpi-value" id="exp-delta-hp-gain">+0.0%</div>
+                        <div class="kpi-meta">Admin &amp; Smart Classrooms</div>
+                    </div>
+                    <div class="kpi-card kpi-success">
+                        <div class="kpi-label">Critical Alerts Prevented</div>
+                        <div class="kpi-value" id="exp-delta-alerts-prevented">0</div>
+                        <div class="kpi-meta">Through fair bandwidth guarantee</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Unmet Academic Demand Reduced</div>
+                        <div class="kpi-value" id="exp-delta-unmet-red">0.0 Mbps</div>
+                        <div class="kpi-meta">Reallocated from guest/bulk traffic</div>
+                    </div>
+                </div>
+
+                <!-- Detailed Comparison Table -->
+                <div class="section-header">
+                    <div class="section-title">
+                        <span>📋</span> Segment-by-Segment Comparison: Baseline (FIFO) vs. Optimized (WFQ-PF)
+                    </div>
+                </div>
+
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Segment Name</th>
+                                <th>Offered Demand</th>
+                                <th>Baseline FIFO Allocation</th>
+                                <th>Optimized QoS Allocation</th>
+                                <th>Bandwidth Delta</th>
+                                <th>Modeled Latency</th>
+                                <th>Health Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="exp-table-body">
+                            <!-- Populated after experiment run -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- History of Past Experiments -->
+            <div style="margin-top: 2rem;">
+                <div class="section-header">
+                    <div class="section-title">
+                        <span>📜</span> Experiment Run History (Persisted in SQLite)
+                    </div>
+                </div>
+
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Run ID</th>
+                                <th>Scenario Name</th>
+                                <th>Modeled Capacity</th>
+                                <th>Observed Improvement</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="exp-history-table-body">
+                            <!-- Populated from SQLite history -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 4: VIRTUAL LAB & LINUX TC                                  -->
+        <!-- ============================================================== -->
+        <section id="pane-lab" class="tab-pane" aria-labelledby="tab-btn-lab">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">
+                        <span>🔌</span> Virtual Network Lab &amp; SDN Bridge Integration
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                        Inspection and command generation for isolated Linux / Mininet / Open vSwitch testbeds.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Environment Status Banner -->
+            <div id="lab-status-banner" class="alert-item info" style="margin-bottom: 1.5rem;">
+                <!-- Populated dynamically -->
+            </div>
+
+            <!-- Lab Architecture Card -->
+            <div class="control-panel-card" style="margin-bottom: 1.5rem;">
+                <h4 style="font-size: 1rem; color: #fff;">Isolated Testbed Architecture</h4>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                    <p>
+                        When running in an isolated Linux / WSL2 environment, CampusNet translates the calculated QoS allocations into native <strong>Linux Hierarchical Token Bucket (HTB)</strong> queueing disciplines using <code>tc</code>.
+                    </p>
+                    <p style="margin-top: 0.5rem;">
+                        <strong>Safety Guarantees:</strong> Lab enforcement is strictly isolated to virtual bridge interfaces (e.g., <code>s1-eth1</code> in Mininet). The application will <em>never</em> alter physical production Ethernet or Wi-Fi adapters.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Generated TC Script Preview -->
+            <div class="section-header">
+                <div class="section-title">
+                    <span>💻</span> Generated Linux TC / HTB Script Preview
+                </div>
+                <span class="badge badge-outline">Safe Dry-Run</span>
+            </div>
+
+            <pre id="lab-tc-code-block" class="code-block">
+# Inspecting environment...
+            </pre>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 5: ARCHITECTURE & VIVA REFERENCE                           -->
+        <!-- ============================================================== -->
+        <section id="pane-docs" class="tab-pane" aria-labelledby="tab-btn-docs">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">
+                        <span>📖</span> Technical Architecture &amp; Competition Viva Reference
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                        Reference documentation designed to assist student presentations during project defense and judging.
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <!-- Card 1: Algorithm Math -->
+                <div class="control-panel-card">
+                    <h4 style="font-size: 1rem; color: var(--color-cyan);">1. Mathematical Formulation of WFQ-PF</h4>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                        <p>Let $C$ be the total shared gateway capacity, and for each campus segment $i$, let $D_i$ be requested demand and $w_i > 0$ be its priority weight.</p>
+                        <p style="margin-top: 0.5rem;"><strong>Phase 1: Guaranteed Slices</strong></p>
+                        <p>$$A_i^{(1)} = \min(D_i, M_{\text{min}, i})$$</p>
+                        <p style="margin-top: 0.5rem;"><strong>Phase 2: Progressive Filling of Remainder ($R = C - \sum A_i^{(1)}$)</strong></p>
+                        <p>For each unsatisfied segment in active set $S$:</p>
+                        <p>$$\Delta_i = R \times \frac{w_i}{\sum_{j \in S} w_j}$$</p>
+                        <p>If $\Delta_k \ge (D_k - A_k)$, segment $k$ is saturated to its demand, removed from $S$, and the unused surplus is iteratively redistributed among remaining hungry flows.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Distinct Metrics -->
+                <div class="control-panel-card">
+                    <h4 style="font-size: 1rem; color: var(--color-emerald);">2. Metric Definitions &amp; Integrity</h4>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                        <ul style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <li><strong>Capacity (Mbps):</strong> The configured maximum physical or modeled channel rate.</li>
+                            <li><strong>Demand (Mbps):</strong> The offered transmission rate requested by campus hosts.</li>
+                            <li><strong>Allocation (Mbps):</strong> The bandwidth assigned to the class queue by the QoS scheduler.</li>
+                            <li><strong>Throughput (Mbps):</strong> The rate actually delivered and observed via measurement tools (e.g. iperf3). Modeled allocation is never conflated with measured throughput.</li>
+                            <li><strong>Utilization (%):</strong> $\frac{\text{Allocation}}{\text{Capacity}} \times 100$. Handled safely when capacity is zero.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Card 3: Traffic Classes & DSCP -->
+                <div class="control-panel-card">
+                    <h4 style="font-size: 1rem; color: var(--color-blue);">3. Traffic Classification &amp; DSCP Marks</h4>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                        <table style="width: 100%; font-size: 0.8rem; margin-top: 0.5rem;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-subtle); color: #fff;">
+                                    <th style="padding: 0.35rem 0;">Class</th>
+                                    <th>Priority</th>
+                                    <th>DSCP</th>
+                                    <th>Example Application</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Academic Interactive</td>
+                                    <td>4</td>
+                                    <td>EF (46)</td>
+                                    <td>Video lectures, Zoom, exam portals</td>
+                                </tr>
+                                <tr>
+                                    <td>Administration</td>
+                                    <td>5</td>
+                                    <td>CS6 (48)</td>
+                                    <td>ERP, registration, payroll</td>
+                                </tr>
+                                <tr>
+                                    <td>Learning Resources</td>
+                                    <td>3</td>
+                                    <td>AF31 (26)</td>
+                                    <td>Moodle LMS, digital library, Git</td>
+                                </tr>
+                                <tr>
+                                    <td>General Browsing</td>
+                                    <td>2</td>
+                                    <td>AF11 (10)</td>
+                                    <td>Web portals, research searches</td>
+                                </tr>
+                                <tr>
+                                    <td>Guest &amp; Bulk</td>
+                                    <td>1</td>
+                                    <td>BE (0)</td>
+                                    <td>Public Wi-Fi, media downloads</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Card 4: National Competition Viva Tips -->
+                <div class="control-panel-card">
+                    <h4 style="font-size: 1rem; color: var(--color-amber);">4. Key Presentation Talking Points</h4>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                        <ul style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <li><strong>Why not just buy more bandwidth?</strong> Physical link upgrades take months, cost thousands of dollars, and during peak exam/lecture surges, unmanaged traffic will still cause queue collapse without QoS.</li>
+                            <li><strong>How do we prevent starvation?</strong> Our WFQ-PF algorithm guarantees minimum baseline slices for all traffic classes, ensuring Guest Wi-Fi retains basic connectivity even during heavy congestion.</li>
+                            <li><strong>Explainability:</strong> Unlike black-box neural networks, our policy engine gives deterministic, audit-ready explanations for every allocated megabit.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 6: AUTHORITY & ADMINISTRATION PANEL                        -->
+        <!-- ============================================================== -->
+        <section id="pane-admin-panel" class="tab-pane" aria-labelledby="tab-btn-admin-panel">
+            
+            <!-- Safety Banner -->
+            <div class="safety-banner">
+                <div class="safety-banner-title">
+                    <span style="font-size: 1.3rem;">🛡️</span>
+                    <div>
+                        <div>Authority &amp; Network Administrator Control Center</div>
+                        <div style="font-size: 0.775rem; color: var(--text-secondary); font-weight: normal;">
+                            Role-Based Access Control • Two-Person Policy Approvals • Immutable Audit Trail
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span class="safety-lock-pill">🔒 PRODUCTION NETWORK LOCKED</span>
+                    <span class="safety-lock-pill active">✓ ISOLATED TESTBED READY</span>
+                </div>
+            </div>
+
+            <!-- Sub-Navigation Tabs -->
+            <div class="sub-nav-tabs">
+                <button class="sub-tab-btn active" data-subtab="subtab-policies">📋 Policy Approval Workflow</button>
+                <button class="sub-tab-btn" data-subtab="subtab-audit">📜 Audit Trail &amp; Governance</button>
+                <button class="sub-tab-btn" data-subtab="subtab-users">👥 User &amp; Role Management</button>
+                <button class="sub-tab-btn" data-subtab="subtab-settings">⚙️ Dynamic Thresholds &amp; Gates</button>
+                <button class="sub-tab-btn" data-subtab="subtab-reports">📥 Compliance &amp; Reports Center</button>
+            </div>
+
+            <!-- SUB-PANE 1: Policies Approval Workflow -->
+            <div id="subtab-policies" class="admin-sub-pane active">
+                <div class="control-panel-card" style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <h3 style="font-size: 1.1rem; color: #fff;">QoS Optimization Policy Approvals</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                Multi-stage lifecycle governance: Network Administrators propose QoS plans, Administrators review &amp; approve, and actions execute safely in the isolated test network with rollback protection.
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <select id="policy-status-filter" class="form-control" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                                <option value="">All Statuses</option>
+                                <option value="PENDING">PENDING Approvals</option>
+                                <option value="APPROVED">APPROVED (Ready to Apply)</option>
+                                <option value="APPLIED">APPLIED</option>
+                                <option value="REJECTED">REJECTED</option>
+                                <option value="ROLLED_BACK">ROLLED_BACK</option>
+                            </select>
+                            <button id="btn-open-propose-modal" class="btn btn-primary" title="Propose QoS Policy">
+                                <span>+</span> Propose Policy
+                            </button>
+                            <button id="btn-refresh-policies" class="btn btn-outline" title="Refresh Policies">
+                                <span>↻</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="data-table" style="font-size: 0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">ID</th>
+                                    <th>Policy Details</th>
+                                    <th>Target Env</th>
+                                    <th>Status</th>
+                                    <th>Proposed By</th>
+                                    <th>Reviewed By</th>
+                                    <th>Applied By</th>
+                                    <th style="width: 220px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="policies-table-body">
+                                <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading policies...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-PANE 2: Audit Trail & Governance -->
+            <div id="subtab-audit" class="admin-sub-pane">
+                <div class="control-panel-card" style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <h3 style="font-size: 1.1rem; color: #fff;">Operational &amp; Security Audit Trail</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                Tamper-evident record of all user sessions, configuration modifications, policy approvals, rollbacks, and security events.
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="audit-search-input" class="form-control" placeholder="Search events..." style="width: 180px; padding: 0.4rem 0.75rem; font-size: 0.8rem;">
+                            <select id="audit-action-filter" class="form-control" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                                <option value="">All Event Actions</option>
+                                <option value="USER_LOGIN">User Logins</option>
+                                <option value="USER_LOGOUT">User Logouts</option>
+                                <option value="POLICY_PROPOSED">Policy Proposals</option>
+                                <option value="POLICY_APPROVED">Policy Approvals</option>
+                                <option value="POLICY_APPLIED">Policy Executions</option>
+                                <option value="POLICY_ROLLBACK">Rollback Events</option>
+                                <option value="THRESHOLD_MODIFIED">Threshold Changes</option>
+                                <option value="CONFIG_UPDATED">Config Updates</option>
+                                <option value="UNAUTHORIZED_ACCESS_ATTEMPT">Security Violations</option>
+                            </select>
+                            <button id="btn-export-audit-csv" class="btn btn-outline" title="Export Audit Trail to CSV">
+                                <span>↓</span> Export CSV
+                            </button>
+                            <button id="btn-refresh-audit" class="btn btn-outline" title="Refresh Audit Trail">
+                                <span>↻</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="data-table" style="font-size: 0.825rem;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 160px;">Timestamp (UTC)</th>
+                                    <th>User &amp; Role</th>
+                                    <th>Action Type</th>
+                                    <th>IP Address</th>
+                                    <th>Event Details &amp; Payload</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-table-body">
+                                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading audit trail...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-PANE 3: User Accounts & Role Management -->
+            <div id="subtab-users" class="admin-sub-pane">
+                <div class="control-panel-card" style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <h3 style="font-size: 1.1rem; color: #fff;">Authorized Accounts &amp; Role Assignments</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                Cryptographically hashed credentials with three role tiers: Administrator, Network Administrator, and Read-Only Authority.
+                            </p>
+                        </div>
+                        <button id="btn-open-create-user-modal" class="btn btn-primary" title="Create Authorized Account">
+                            <span>+</span> Create Account
+                        </button>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="data-table" style="font-size: 0.85rem;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">ID</th>
+                                    <th>Username</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Role Assignment</th>
+                                    <th>Status</th>
+                                    <th>Last Login</th>
+                                    <th style="width: 220px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading user accounts...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-PANE 4: Dynamic Thresholds & Gates -->
+            <div id="subtab-settings" class="admin-sub-pane">
+                <div class="control-panel-card" style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 0.25rem;">Dynamic Congestion Thresholds &amp; Operational Gates</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                        Configure multi-metric congestion trigger rules and enforcement safety switches. Changes are dynamically persisted and audited.
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <!-- Utilization Thresholds -->
+                        <div style="background: rgba(17, 24, 39, 0.7); border: 1px solid var(--border-subtle); padding: 1.25rem; border-radius: var(--radius-md);">
+                            <h4 style="font-size: 0.95rem; color: var(--color-cyan); margin-bottom: 1rem;">1. Bandwidth Utilization Limits (%)</h4>
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label style="font-size: 0.8rem; color: var(--text-secondary);">Warning Utilization (%)</label>
+                                <input type="number" id="setting-warn-util" class="form-control" min="10" max="100" step="1" value="70">
+                            </div>
+                            <div class="form-group">
+                                <label style="font-size: 0.8rem; color: var(--text-secondary);">Critical Utilization (%)</label>
+                                <input type="number" id="setting-crit-util" class="form-control" min="20" max="100" step="1" value="85">
+                            </div>
+                        </div>
+
+                        <!-- Latency Thresholds -->
+                        <div style="background: rgba(17, 24, 39, 0.7); border: 1px solid var(--border-subtle); padding: 1.25rem; border-radius: var(--radius-md);">
+                            <h4 style="font-size: 0.95rem; color: var(--color-amber); margin-bottom: 1rem;">2. Round-Trip Latency Limits (ms)</h4>
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label style="font-size: 0.8rem; color: var(--text-secondary);">Warning Latency (ms)</label>
+                                <input type="number" id="setting-warn-lat" class="form-control" min="5" max="500" step="1" value="50">
+                            </div>
+                            <div class="form-group">
+                                <label style="font-size: 0.8rem; color: var(--text-secondary);">Critical Latency (ms)</label>
+                                <input type="number" id="setting-crit-lat" class="form-control" min="10" max="1000" step="1" value="100">
+                            </div>
+                        </div>
+
+                        <!-- Loss Thresholds -->
+                        <div style="background: rgba(17, 24, 39, 0.7); border: 1px solid var(--border-subtle); padding: 1.25rem; border-radius: var(--radius-md);">
+                            <h4 style="font-size: 0.95rem; color: var(--color-rose); margin-bottom: 1rem;">3. Packet Loss Limits (%)</h4>
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label style="font-size: 0.8rem; color: var(--text-secondary);">Warning Packet Loss (%)</label>
+                                <input type="number" id="setting-warn-loss" class="form-control" min="0.1" max="50" step="0.1" value="1.0">
+                            </div>
+                            <div class="form-group">
+                                <label style="font-size: 0.8rem; color: var(--text-secondary);">Critical Packet Loss (%)</label>
+                                <input type="number" id="setting-crit-loss" class="form-control" min="0.5" max="100" step="0.1" value="3.0">
+                            </div>
+                        </div>
+
+                        <!-- Safety Gates -->
+                        <div style="background: rgba(17, 24, 39, 0.7); border: 1px solid var(--border-subtle); padding: 1.25rem; border-radius: var(--radius-md);">
+                            <h4 style="font-size: 0.95rem; color: var(--color-emerald); margin-bottom: 1rem;">4. Safety Gate Controls</h4>
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" id="setting-enforcement-toggle" style="width: 18px; height: 18px;">
+                                    <span>Enable Automated Testbed Enforcement</span>
+                                </label>
+                                <p style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.35rem;">
+                                    Disabled by default. When enabled, allows approved policies to execute in the isolated test network.
+                                </p>
+                            </div>
+                            <div style="padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-sm); font-size: 0.75rem; color: #FCA5A5;">
+                                <strong>Safety Invariant:</strong> Direct production network policy enforcement is permanently locked in software to prevent unverified network disruptions.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                        <button id="btn-save-settings" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">
+                            <span>💾</span> Save Dynamic Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-PANE 5: Reports Center -->
+            <div id="subtab-reports" class="admin-sub-pane">
+                <div class="control-panel-card" style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 0.25rem;">Institutional Compliance &amp; Operations Reports</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        Download verified reports for executive reviews, audit inspections, and accreditation submissions.
+                    </p>
+
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <div>
+                                <div class="report-card-icon">📊</div>
+                                <div class="report-card-format">CSV FORMAT</div>
+                                <div class="report-card-title">Live Telemetry Report</div>
+                                <div class="report-card-desc">
+                                    Comprehensive breakdown of all campus segments, capacities, requested demands, QoS allocations, latency, and packet loss metrics.
+                                </div>
+                            </div>
+                            <button id="btn-download-telemetry" class="btn btn-primary" style="width: 100%;">
+                                <span>↓</span> Download Telemetry CSV
+                            </button>
+                        </div>
+
+                        <div class="report-card">
+                            <div>
+                                <div class="report-card-icon">📜</div>
+                                <div class="report-card-format">CSV FORMAT</div>
+                                <div class="report-card-title">Policy Governance Report</div>
+                                <div class="report-card-desc">
+                                    Full historical log of proposed, approved, rejected, applied, and rolled-back optimization policies with reviewer attribution.
+                                </div>
+                            </div>
+                            <button id="btn-download-policies" class="btn btn-primary" style="width: 100%;">
+                                <span>↓</span> Download Policy History CSV
+                            </button>
+                        </div>
+
+                        <div class="report-card">
+                            <div>
+                                <div class="report-card-icon">🛡️</div>
+                                <div class="report-card-format">CSV FORMAT</div>
+                                <div class="report-card-title">Security &amp; Audit Trail</div>
+                                <div class="report-card-desc">
+                                    Complete audit log of user logins, configuration modifications, threshold alterations, and security events for institutional compliance.
+                                </div>
+                            </div>
+                            <button id="btn-download-audit" class="btn btn-primary" style="width: 100%;">
+                                <span>↓</span> Download Audit Trail CSV
+                            </button>
+                        </div>
+
+                        <div class="report-card">
+                            <div>
+                                <div class="report-card-icon">📄</div>
+                                <div class="report-card-format">HTML / PRINTABLE PDF</div>
+                                <div class="report-card-title">Executive Summary</div>
+                                <div class="report-card-desc">
+                                    Executive-level visual compliance summary ready for print, PDF export, or institutional accreditation evaluation.
+                                </div>
+                            </div>
+                            <button id="btn-view-executive" class="btn btn-primary" style="width: 100%;">
+                                <span>👁️</span> Open Executive Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- CSV Import Modal Dialog -->
+    <div id="import-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-title" style="font-size: 1.1rem; color: #fff;">Import Aggregate Measurement CSV</h3>
+                <button id="btn-close-import-modal" class="close-btn" aria-label="Close dialog">&times;</button>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                <p>Upload a validated CSV file containing historical campus network telemetry.</p>
+                <p style="margin-top: 0.35rem;">
+                    Required columns: <code>timestamp</code>, <code>segment_name</code>, <code>demand_mbps</code>.<br>
+                    Optional columns: <code>throughput_mbps</code>, <code>latency_ms</code>, <code>packet_loss_pct</code>, <code>jitter_ms</code>.
+                </p>
+                <div style="margin-top: 0.5rem;">
+                    <a href="{{ url_for('static', filename='../sample_data/sample_measurements.csv') }}" download style="color: var(--color-cyan); font-size: 0.8rem; text-decoration: underline;">
+                        Download Sample Valid CSV Template
+                    </a>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 0.5rem;">
+                <input type="file" id="csv-file-input" accept=".csv" class="form-control" style="padding: 0.75rem;">
+            </div>
+
+            <div id="import-status-msg" style="font-size: 0.825rem; min-height: 20px;"></div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                <button id="btn-cancel-import" class="btn btn-outline">Cancel</button>
+                <button id="btn-upload-csv" class="btn btn-primary">Upload &amp; Ingest</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign In Modal -->
+    <div id="login-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+        <div class="modal-card" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 id="login-modal-title" style="font-size: 1.1rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🔒</span> Authority &amp; Admin Sign In
+                </h3>
+                <button id="btn-close-login-modal" class="close-btn" aria-label="Close dialog">&times;</button>
+            </div>
+
+            <div style="font-size: 0.825rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Select a preset role for rapid demonstration, or enter registered credentials.
+            </div>
+
+            <!-- Quick Preset Roles -->
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem; font-weight: 700;">
+                Quick Demo Presets:
+            </div>
+            <div class="preset-roles-group">
+                <button type="button" class="preset-role-chip" data-user="admin" data-pass="Admin@CampusNet2026">
+                    🛡️ Admin
+                </button>
+                <button type="button" class="preset-role-chip" data-user="netadmin" data-pass="NetAdmin@CampusNet2026">
+                    ⚡ NetAdmin
+                </button>
+                <button type="button" class="preset-role-chip" data-user="authority" data-pass="Authority@CampusNet2026">
+                    👁️ Authority
+                </button>
+            </div>
+
+            <form id="login-form">
+                <div class="form-group" style="margin-bottom: 0.75rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Username</label>
+                    <input type="text" id="login-username" class="form-control" placeholder="e.g. admin" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Password</label>
+                    <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <div id="login-status-msg" style="font-size: 0.8rem; min-height: 20px; margin-bottom: 0.5rem;"></div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                    <button type="button" id="btn-cancel-login" class="btn btn-outline" onclick="document.getElementById('login-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Sign In</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Propose Policy Modal -->
+    <div id="propose-modal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-card" style="max-width: 520px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem; color: #fff;">Propose Optimization Policy</h3>
+                <button id="btn-close-propose-modal" class="close-btn">&times;</button>
+            </div>
+            <p style="font-size: 0.825rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Submits computed WFQ-PF bandwidth allocations into the administrative approval queue.
+            </p>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.8rem;">Policy Name</label>
+                <input type="text" id="propose-name" class="form-control" placeholder="e.g. Afternoon Exam Bandwidth Plan" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.8rem;">Justification &amp; Notes</label>
+                <textarea id="propose-desc" class="form-control" rows="2" placeholder="Operational rationale..."></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label style="font-size: 0.8rem;">Target Environment</label>
+                <select id="propose-target-env" class="form-control">
+                    <option value="ISOLATED_TESTBED" selected>Isolated Testbed Network (Recommended)</option>
+                    <option value="SIMULATION">High-Fidelity Simulation</option>
+                    <option value="PRODUCTION">Campus Production Gateway (Safety Locked)</option>
+                </select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button id="btn-cancel-propose" class="btn btn-outline">Cancel</button>
+                <button id="btn-submit-proposal" class="btn btn-primary">Submit for Review</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Policy Modal -->
+    <div id="reject-modal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-card" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem; color: #fff;">Reject Optimization Policy</h3>
+                <button id="btn-close-reject-modal" class="close-btn">&times;</button>
+            </div>
+            <p style="font-size: 0.825rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Please provide an explicit administrative justification for rejecting this proposal.
+            </p>
+            <input type="hidden" id="reject-policy-id">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="font-size: 0.8rem;">Rejection Justification</label>
+                <textarea id="reject-reason" class="form-control" rows="3" placeholder="Explain why this proposal is rejected..." required></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button id="btn-cancel-reject" class="btn btn-outline">Cancel</button>
+                <button id="btn-confirm-reject" class="btn btn-danger">Confirm Rejection</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div id="create-user-modal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem; color: #fff;">Create Authorized Account</h3>
+                <button id="btn-close-create-user-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.8rem;">Username</label>
+                <input type="text" id="create-username" class="form-control" placeholder="e.g. jdoe" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.8rem;">Full Name</label>
+                <input type="text" id="create-full-name" class="form-control" placeholder="e.g. John Doe" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.8rem;">Email Address</label>
+                <input type="email" id="create-email" class="form-control" placeholder="e.g. jdoe@campus.edu">
+            </div>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.8rem;">Password (Min 6 chars)</label>
+                <input type="password" id="create-password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label style="font-size: 0.8rem;">Role Assignment</label>
+                <select id="create-role" class="form-control">
+                    <option value="netadmin" selected>Network Administrator (Operational QoS &amp; Experiments)</option>
+                    <option value="readonly">Read-Only Authority (Auditor / Dashboards &amp; Reports)</option>
+                    <option value="admin">Administrator (Full System &amp; Policy Approval Authority)</option>
+                </select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button id="btn-cancel-create-user" class="btn btn-outline">Cancel</button>
+                <button id="btn-submit-create-user" class="btn btn-primary">Create User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div id="reset-password-modal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem; color: #fff;">Reset Password</h3>
+                <button id="btn-close-reset-password" class="close-btn">&times;</button>
+            </div>
+            <input type="hidden" id="reset-password-user-id">
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label style="font-size: 0.8rem;">New Password (Min 6 chars)</label>
+                <input type="password" id="reset-password-input" class="form-control" placeholder="••••••••" required>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button id="btn-cancel-reset-password" class="btn btn-outline">Cancel</button>
+                <button id="btn-confirm-reset-password" class="btn btn-primary">Save Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy Details Modal -->
+    <div id="policy-details-modal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-card" style="max-width: 640px;">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem; color: #fff;">Policy Inspection &amp; Allocations</h3>
+                <button id="btn-close-policy-details" class="close-btn">&times;</button>
+            </div>
+            <div id="policy-details-content" style="max-height: 480px; overflow-y: auto;"></div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                <button class="btn btn-outline" onclick="document.getElementById('policy-details-modal').classList.remove('active')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div>CampusNet: Adaptive Campus Network Performance Optimization • National-Level Student Project System</div>
+        <div style="margin-top: 0.25rem;">Built with Python 3, Flask, SQLite, Vanilla JavaScript &amp; Chart.js • Safe Isolated Design</div>
+    </footer>
+
+    <!-- Local Chart.js Engine -->
+    <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+    <!-- Dashboard Controller -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <!-- Authority & Administration Controller -->
+    <script src="{{ url_for('static', filename='js/auth_admin.js') }}"></script>
+    <!-- 3D Interactive Cursor & 3D Network Background -->
+    <script src="{{ url_for('static', filename='js/cursor_and_3d_bg.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+timestamp,segment_name,demand_mbps,throughput_mbps,capacity_mbps,latency_ms,packet_loss_pct,jitter_ms,notes
+2026-10-21T09:00:00Z,Computer Lab,210.0,205.4,300.0,28.2,0.4,3.1,Morning programming lab session
+2026-10-21T09:00:00Z,Smart Classrooms,180.0,178.2,250.0,24.5,0.2,2.4,Physics lecture video conference
+2026-10-21T09:00:00Z,Library,75.0,74.8,150.0,15.1,0.0,1.2,Standard digital catalog searches
+2026-10-21T09:00:00Z,Administration,35.0,34.9,100.0,12.0,0.0,0.8,Admissions portal traffic
+2026-10-21T09:00:00Z,Guest Wi-Fi,120.0,118.0,200.0,35.0,0.8,6.5,Morning campus arrivals
+2026-10-21T11:30:00Z,Computer Lab,285.0,270.0,300.0,42.0,1.5,5.8,AI/ML model training batch
+2026-10-21T11:30:00Z,Smart Classrooms,255.0,240.0,250.0,65.0,3.6,12.0,Concurrent 4K medical broadcast
+2026-10-21T11:30:00Z,Library,115.0,110.0,150.0,21.0,0.1,2.0,Mid-day study room rush
+2026-10-21T11:30:00Z,Administration,42.0,42.0,100.0,13.5,0.0,0.9,Fee payment gateway peak
+2026-10-21T11:30:00Z,Guest Wi-Fi,230.0,185.0,200.0,89.0,5.2,19.2,Lunch hour cafeteria streaming

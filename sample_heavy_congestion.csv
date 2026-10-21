@@ -1,0 +1,6 @@
+timestamp,segment_name,demand_mbps,throughput_mbps,capacity_mbps,latency_ms,packet_loss_pct,jitter_ms,notes
+2026-10-21T14:00:00Z,Computer Lab,295.0,260.0,300.0,58.0,2.8,9.5,Afternoon lab contest with heavy cloud git pulls
+2026-10-21T14:00:00Z,Smart Classrooms,265.0,210.0,250.0,72.0,4.5,14.2,Inter-college livestream and campus webinar
+2026-10-21T14:00:00Z,Library,135.0,125.0,150.0,28.0,0.5,3.0,Digital archives downloads
+2026-10-21T14:00:00Z,Administration,48.0,48.0,100.0,15.0,0.0,1.0,Term-end exam marks upload
+2026-10-21T14:00:00Z,Guest Wi-Fi,280.0,150.0,200.0,120.0,8.5,25.0,Auditorium cultural fest guest streaming
